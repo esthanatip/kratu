@@ -173,7 +173,8 @@ body{font-family:'Sarabun',sans-serif;background:#f0ede8;color:#111;min-height:1
         <label>URL (Apps Script หรือ CSV Export)</label>
         <input id="sheetUrl" type="text" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%">
       </div>
-      <button class="btn btn-blue" id="btnLoadUrl">เชื่อมต่อ</button>
+      <button class="btn btn-blue" id="btnLoadUrl">เชื่อมต่อ & จำไว้</button>
+      <button class="btn btn-gray" id="btnForgetUrl" title="ลบ URL ที่บันทึกไว้">🗑️ ลืม URL</button>
     </div>
 
     <!-- COLUMN MAP -->
@@ -591,10 +592,22 @@ body{font-family:'Sarabun',sans-serif;background:#f0ede8;color:#111;min-height:1
     // แสดงวันนี้ที่มุมซ้าย
     document.getElementById('todayBadge').textContent = todayThai();
 
+    // คืนค่า URL ที่บันทึกไว้ และโหลดอัตโนมัติ
+    try {
+      var savedUrl = localStorage.getItem('krathu_url');
+      if (savedUrl) {
+        document.getElementById('sheetUrl').value = savedUrl;
+        // แสดง badge ว่าจำ URL ไว้แล้ว
+        setStatus('🔗 จำ URL ไว้แล้ว — กำลังโหลดข้อมูลอัตโนมัติ...', 's-load');
+        loadFromUrl(savedUrl);
+      }
+    } catch(e) {}
+
     // Top bar
     document.getElementById('btnLoad').addEventListener('click', function () {
       var url = document.getElementById('sheetUrl').value.trim();
       if (!url) { setStatus('กรุณากรอก URL ใน ⚙️ ตั้งค่าก่อน', 's-err'); document.getElementById('setupEl').style.display = 'block'; return; }
+      try { localStorage.setItem('krathu_url', url); } catch(e) {}
       loadFromUrl(url);
     });
     document.getElementById('btnRaw').addEventListener('click', showRaw);
@@ -628,9 +641,16 @@ body{font-family:'Sarabun',sans-serif;background:#f0ede8;color:#111;min-height:1
         '15 มี.ค. 2568\tนายรวี เล็กอยัย\tแนวทางการดูแลประชากรผู้สูงอายุ\tสว.\tสาธารณสุข\tชุดที่ ๒๖ ปีที่ ๓ ครั้งที่ ๒๖\tมาตอบ\tเลื่อน'
       ].join('\n'));
     });
+    document.getElementById('btnForgetUrl').addEventListener('click', function () {
+      try { localStorage.removeItem('krathu_url'); } catch(e) {}
+      document.getElementById('sheetUrl').value = '';
+      setStatus('🗑️ ลบ URL ที่บันทึกไว้แล้ว — กรอก URL ใหม่แล้วกด "เชื่อมต่อ & จำไว้"', 's-ok');
+    });
+
     document.getElementById('btnLoadUrl').addEventListener('click', function () {
       var url = document.getElementById('sheetUrl').value.trim();
       if (!url) { setStatus('กรุณากรอก URL ก่อน', 's-err'); return; }
+      try { localStorage.setItem('krathu_url', url); } catch(e) {}
       loadFromUrl(url);
     });
 
